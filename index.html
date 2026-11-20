@@ -1,0 +1,1706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CSI Wildlife: Elephant DNA Interactive Worksheet</title>
+  <!-- Load Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Load Inter Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+          },
+          colors: {
+            lab: {
+              dark: '#0c231e',
+              forest: '#143d34',
+              accent: '#059669',
+              amber: '#d97706',
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* Base typography and full-viewport locking for split-screen mode */
+    html, body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Custom subtle scrollbar for the bottom worksheet pane */
+    #worksheet-pane::-webkit-scrollbar {
+      width: 10px;
+    }
+    #worksheet-pane::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    #worksheet-pane::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+      border: 2px solid #f1f5f9;
+    }
+    #worksheet-pane::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    /* Print-only answer mirror hidden on screen */
+    .print-answer-mirror {
+      display: none;
+    }
+
+    /* Dedicated Print Stylesheet for clean PDF Export / Printing */
+    @media print {
+      @page {
+        margin: 0.6in;
+        size: letter portrait;
+      }
+
+      html, body {
+        height: auto !important;
+        overflow: visible !important;
+        background: #ffffff !important;
+        color: #0f172a !important;
+        font-size: 10.5pt !important;
+      }
+
+      /* Hide interactive top pane, resizer, sticky toolbar, buttons, and toast */
+      #top-interactive-pane,
+      #split-resizer,
+      #sticky-control-bar,
+      .no-print,
+      #toast-container,
+      #reset-modal {
+        display: none !important;
+      }
+
+      /* Show print-only header */
+      #print-header {
+        display: block !important;
+        margin-bottom: 16pt;
+        padding-bottom: 10pt;
+        border-bottom: 2px solid #0f172a;
+      }
+
+      /* Expand bottom pane to natural document flow */
+      #app-shell {
+        display: block !important;
+        height: auto !important;
+        overflow: visible !important;
+      }
+
+      #worksheet-pane {
+        display: block !important;
+        height: auto !important;
+        overflow: visible !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+      }
+
+      #worksheet-content {
+        max-width: 100% !important;
+        padding: 0 !important;
+      }
+
+      /* Clean card borders for print without shadows */
+      .question-card {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        box-shadow: none !important;
+        border: 1px solid #cbd5e1 !important;
+        margin-bottom: 12pt !important;
+        padding: 10pt 12pt !important;
+        background: #ffffff !important;
+      }
+
+      /* Hide raw inputs/textareas in print and render full-height text mirrors */
+      .worksheet-field {
+        display: none !important;
+      }
+
+      .print-answer-mirror {
+        display: block !important;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        min-height: 24pt;
+        padding: 6pt 8pt;
+        margin-top: 4pt;
+        background-color: #f8fafc !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 4pt;
+        font-size: 10pt;
+        color: #0f172a;
+      }
+
+      .print-answer-mirror.empty-answer {
+        color: #94a3b8;
+        font-style: italic;
+      }
+
+      table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+      }
+
+      th, td {
+        border: 1px solid #94a3b8 !important;
+        padding: 6pt !important;
+        vertical-align: top !important;
+      }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased selection:bg-emerald-100 selection:text-emerald-900">
+
+  <!-- Main 100vh Split-Screen Shell -->
+  <div id="app-shell" class="h-screen w-screen overflow-hidden flex flex-col">
+
+    <!-- =====================================================================
+         TOP PANE: PINNED HHMI BIOINTERACTIVE EMBED + COMPACT TOOLBAR
+    ====================================================================== -->
+    <section id="top-interactive-pane" class="w-full flex flex-col bg-slate-900 shrink-0 transition-[height] duration-150 ease-out" style="height: 52vh;">
+      <!-- Compact Top Toolbar (~38px tall) -->
+      <header class="h-[38px] min-h-[38px] px-3 sm:px-4 bg-lab-dark text-white border-b border-emerald-900/80 flex items-center justify-between gap-2 select-none">
+        <!-- Left: Assignment Title -->
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="inline-flex items-center justify-center w-5 h-5 rounded bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 shrink-0" aria-hidden="true">
+            <!-- DNA Helix Icon -->
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 15c6.667-6 13.333 0 20-6" />
+              <path d="M9 22c1.798-1.998 2.518-3.995 2.807-5.993" />
+              <path d="M15 2c-1.798 1.998-2.518 3.995-2.807 5.993" />
+              <path d="m17 6-2.5-2.5" />
+              <path d="m14 8-1-1" />
+              <path d="m7 18 2.5 2.5" />
+              <path d="m3.5 14.5.5.5" />
+              <path d="m20 9 .5.5" />
+              <path d="m6.5 12.5 1 1" />
+              <path d="m16.5 10.5 1 1" />
+              <path d="m10 16 1.5 1.5" />
+            </svg>
+          </span>
+          <h1 class="text-xs sm:text-sm font-bold tracking-tight truncate text-emerald-50">
+            CSI Wildlife: Elephant DNA Interactive Worksheet
+          </h1>
+        </div>
+
+        <!-- Center/Right: Height Preset Controls + External Link -->
+        <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <!-- Height Preset Buttons -->
+          <div class="hidden md:flex items-center bg-slate-900/80 p-0.5 rounded-md border border-slate-700/80" role="group" aria-label="Interactive window height presets">
+            <button type="button" data-preset="40" class="preset-btn px-2 py-0.5 text-[11px] font-medium rounded text-slate-300 hover:text-white transition-colors">
+              Compact 40%
+            </button>
+            <button type="button" data-preset="52" class="preset-btn px-2 py-0.5 text-[11px] font-semibold rounded bg-emerald-700 text-white shadow-sm transition-colors">
+              Balanced 52%
+            </button>
+            <button type="button" data-preset="68" class="preset-btn px-2 py-0.5 text-[11px] font-medium rounded text-slate-300 hover:text-white transition-colors">
+              Expanded 68%
+            </button>
+          </div>
+
+          <!-- Compact Mobile Height Cycle Button -->
+          <button type="button" id="mobile-height-cycle" class="md:hidden px-2 py-1 text-[11px] font-medium rounded bg-slate-800 hover:bg-slate-700 text-emerald-200 border border-slate-700 transition-colors" title="Toggle interactive height">
+            View: 52%
+          </button>
+
+          <!-- Open Interactive in New Tab Link -->
+          <a
+            href="https://media.hhmi.org/biointeractive/click/elephants/dna/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-emerald-700/90 hover:bg-emerald-600 text-white border border-emerald-500/40 transition-colors"
+            title="Opens the HHMI BioInteractive in a new browser tab"
+          >
+            <span class="hidden sm:inline">Open Interactive in New Tab</span>
+            <span class="sm:hidden">New Tab</span>
+            <svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+              <polyline points="15 3 21 3 21 9" />
+              <line x1="10" y1="14" x2="21" y2="3" />
+            </svg>
+          </a>
+        </div>
+      </header>
+
+      <!-- Embedded HHMI BioInteractive Container -->
+      <div class="relative flex-1 w-full bg-slate-950 overflow-hidden">
+        <!-- Transparent Drag Shield (prevents iframe from stealing mouse events while dragging resizer) -->
+        <div id="iframe-drag-shield" class="hidden absolute inset-0 z-20 cursor-row-resize bg-transparent"></div>
+
+        <iframe
+          id="hhmi-iframe"
+          src="https://media.hhmi.org/biointeractive/click/elephants/dna/"
+          title="HHMI BioInteractive CSI Wildlife Simulation"
+          class="w-full h-full border-0 block"
+          allow="fullscreen; autoplay"
+          loading="eager"
+        ></iframe>
+      </div>
+    </section>
+
+    <!-- =====================================================================
+         DRAGGABLE HORIZONTAL SPLIT DIVIDER
+    ====================================================================== -->
+    <div
+      id="split-resizer"
+      role="separator"
+      aria-orientation="horizontal"
+      aria-label="Drag to resize interactive window and worksheet area"
+      tabindex="0"
+      class="h-2.5 min-h-[10px] w-full bg-slate-800 hover:bg-emerald-700 active:bg-emerald-600 border-y border-slate-700 cursor-row-resize flex items-center justify-center transition-colors select-none shrink-0 z-30"
+    >
+      <div class="w-12 h-1 rounded-full bg-slate-400/80"></div>
+    </div>
+
+    <!-- =====================================================================
+         BOTTOM PANE: INDEPENDENTLY SCROLLABLE WORKSHEET AREA
+    ====================================================================== -->
+    <main id="worksheet-pane" class="flex-1 w-full overflow-y-auto bg-slate-50 relative">
+
+      <!-- Print-Only Header (Visible only when exporting/printing) -->
+      <div id="print-header" class="hidden">
+        <div class="flex justify-between items-end">
+          <div>
+            <p class="text-xs uppercase tracking-wider font-bold text-slate-600">Biology Lab Investigation</p>
+            <h1 class="text-xl font-extrabold text-slate-900">CSI Wildlife: Elephant DNA Interactive Worksheet</h1>
+          </div>
+          <div class="text-right text-sm">
+            <p><span class="font-bold">Student Name:</span> <span id="print-student-name">__________________________</span></p>
+            <p><span class="font-bold">Date:</span> <span id="print-date"></span></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sticky Worksheet Control Bar -->
+      <div id="sticky-control-bar" class="sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
+        <div class="max-w-5xl mx-auto px-3 sm:px-6 py-2.5 flex flex-col gap-2">
+          <!-- Top Row: Student Name, Progress Bar, Save Status, Action Buttons -->
+          <div class="flex flex-wrap items-center justify-between gap-2.5">
+            <!-- Student Name Input -->
+            <div class="flex items-center gap-2 flex-1 min-w-[210px] max-w-xs">
+              <label for="student-name" class="text-xs font-bold uppercase tracking-wider text-slate-600 shrink-0">
+                Name:
+              </label>
+              <input
+                type="text"
+                id="student-name"
+                placeholder="Enter your full name..."
+                class="w-full px-2.5 py-1.5 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 focus:bg-white transition-all"
+              />
+            </div>
+
+            <!-- Live Progress Indicator -->
+            <div class="flex items-center gap-2.5 min-w-[170px] flex-1 max-w-xs">
+              <div class="flex-1">
+                <div class="flex items-center justify-between text-xs font-semibold mb-1">
+                  <span class="text-slate-600">Progress</span>
+                  <span id="progress-text" class="text-emerald-700 font-bold">0 / 16 Completed</span>
+                </div>
+                <div class="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                  <div id="progress-bar" class="h-full bg-emerald-600 rounded-full transition-all duration-300" style="width: 0%;"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Save Indicator & Action Buttons -->
+            <div class="flex items-center flex-wrap gap-1.5 sm:gap-2">
+              <!-- Subtle Auto-Save Status -->
+              <span id="save-indicator" class="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded-md">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                <span>Saved</span>
+              </span>
+
+              <!-- Copy All Answers (Canvas LMS Ready) -->
+              <button
+                type="button"
+                id="copy-answers-btn"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-700 hover:bg-emerald-800 active:bg-emerald-900 text-white shadow-sm transition-colors"
+                title="Copy all formatted questions and answers to clipboard for Canvas submission"
+              >
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                </svg>
+                <span>Copy All Answers</span>
+              </button>
+
+              <!-- Export / Print Worksheet -->
+              <button
+                type="button"
+                id="print-worksheet-btn"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-900 text-white shadow-sm transition-colors"
+                title="Print or Save Worksheet as PDF"
+              >
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 6 2 18 2 18 9" />
+                  <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                  <rect x="6" y="14" width="12" height="8" />
+                </svg>
+                <span>Export / Print Worksheet</span>
+              </button>
+
+              <!-- Reset Answers Button -->
+              <button
+                type="button"
+                id="open-reset-modal-btn"
+                class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-colors"
+                title="Clear all saved answers"
+              >
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 6h18" />
+                  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                  <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                </svg>
+                <span class="hidden sm:inline">Reset Answers</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Bottom Row: Quick Section Navigation Buttons -->
+          <nav class="flex items-center gap-1.5 overflow-x-auto pb-0.5" aria-label="Worksheet sections">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mr-1 shrink-0">Jump to:</span>
+            <button type="button" data-target="section-intro" class="nav-jump-btn px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-100 hover:bg-emerald-100 text-slate-700 hover:text-emerald-900 border border-slate-200 transition-colors shrink-0">
+              Intro (Q1–Q2)
+            </button>
+            <button type="button" data-target="section-case-one" class="nav-jump-btn px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-100 hover:bg-emerald-100 text-slate-700 hover:text-emerald-900 border border-slate-200 transition-colors shrink-0">
+              Case One (Q3–Q9)
+            </button>
+            <button type="button" data-target="section-case-two" class="nav-jump-btn px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-100 hover:bg-emerald-100 text-slate-700 hover:text-emerald-900 border border-slate-200 transition-colors shrink-0">
+              Case Two (Q10–Q14)
+            </button>
+            <button type="button" data-target="section-q15-conclusion" class="nav-jump-btn px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-100 hover:bg-emerald-100 text-slate-700 hover:text-emerald-900 border border-slate-200 transition-colors shrink-0">
+              Q15 Table &amp; Conclusion
+            </button>
+          </nav>
+        </div>
+      </div>
+
+      <!-- Main Worksheet Content Container -->
+      <div id="worksheet-content" class="max-w-5xl mx-auto px-3 sm:px-6 py-6 space-y-8 pb-20">
+
+        <!-- Header Procedure Note -->
+        <div class="bg-emerald-950 text-emerald-50 rounded-xl p-4 sm:p-5 shadow-sm border border-emerald-800 flex items-start gap-3">
+          <div class="p-2 rounded-lg bg-emerald-800/70 text-amber-300 shrink-0 mt-0.5 no-print">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="16" x2="12" y2="12" />
+              <line x1="12" y1="8" x2="12.01" y2="8" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-xs font-bold uppercase tracking-wider text-amber-300 mb-0.5">Procedure</p>
+            <p class="text-sm sm:text-base font-medium leading-relaxed">
+              As you proceed through the interactive, follow the instructions and answer the questions in the space provided.
+            </p>
+          </div>
+        </div>
+
+        <!-- =================================================================
+             SECTION: INTRODUCTION
+        ================================================================== -->
+        <section id="section-intro" class="space-y-4 scroll-mt-28">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b-2 border-slate-300 pb-2">
+            <h2 class="text-lg sm:text-xl font-extrabold tracking-tight text-slate-900 uppercase">
+              Introduction
+            </h2>
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300">
+              [Launch Interactive &gt; Introduction &gt; Opening Video]
+            </span>
+          </div>
+
+          <!-- Q1 -->
+          <article class="question-card bg-white rounded-xl border border-slate-200 shadow-sm p-5 sm:p-6 transition-all" data-q="1">
+            <div class="flex items-start justify-between gap-3 mb-2">
+              <label for="ans-q1" class="text-sm sm:text-base font-semibold text-slate-900 leading-snug">
+                <span class="inline-block px-2 py-0.5 mr-1.5 rounded bg-emerald-100 text-emerald-900 font-bold text-xs">Q1</span>
+                What is a keystone species?
+              </label>
+              <span class="q-status-badge shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 no-print">Unanswered</span>
+            </div>
+            <textarea
+              id="ans-q1"
+              rows="2"
+              placeholder="Type your answer here..."
+              class="worksheet-field w-full mt-1 p-3 text-sm text-slate-800 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 focus:bg-white transition-all resize-y"
+            ></textarea>
+            <div class="print-answer-mirror" data-mirror-for="ans-q1"></div>
+          </article>
+
+          <!-- Q2 -->
+          <article class="question-card bg-white rounded-xl border border-slate-200 shadow-sm p-5 sm:p-6 transition-all" data-q="2">
+            <div class="flex items-start justify-between gap-3 mb-2">
+              <label for="ans-q2" class="text-sm sm:text-base font-semibold text-slate-900 leading-snug">
+                <span class="inline-block px-2 py-0.5 mr-1.5 rounded bg-emerald-100 text-emerald-900 font-bold text-xs">Q2</span>
+                Dr. Wasser states that approximately 50,000 African elephants are killed each year. According to the video, it is estimated that there are around 470,000 African elephants. If these numbers are correct, approximately what percentage of African elephants are killed each year? (Show your work.)
+              </label>
+              <span class="q-status-badge shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 no-print">Unanswered</span>
+            </div>
+            <textarea
+              id="ans-q2"
+              rows="3"
+              placeholder="Show your calculation and percentage here..."
+              class="worksheet-field w-full mt-1 p-3 text-sm text-slate-800 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 focus:bg-white transition-all resize-y"
+            ></textarea>
+            <div class="print-answer-mirror" data-mirror-for="ans-q2"></div>
+          </article>
+        </section>
+
+        <!-- =================================================================
+             SECTION: CASE ONE
+        ================================================================== -->
+        <section id="section-case-one" class="space-y-5 scroll-mt-28">
+          <div class="bg-lab-forest text-white rounded-xl px-5 py-3.5 shadow-sm flex flex-wrap items-center justify-between gap-2">
+            <h2 class="text-lg sm:text-xl font-extrabold tracking-tight uppercase">
+              CASE ONE
+            </h2>
+            <span class="text-xs font-semibold text-emerald-200">DNA Profiling &amp; Gel Electrophoresis</span>
+          </div>
+
+          <!-- Subsection: How DNA Profiling Works -->
+          <div class="space-y-3">
+            <div class="bg-amber-50 border-l-4 border-amber-500 rounded-r-xl p-3.5 sm:p-4">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-200/80 text-amber-950 mb-1.5">
+                [Case One &gt; How DNA Profiling Works]
+              </span>
+              <p class="text-sm font-medium text-slate-800">
+                Proceed to the “How DNA Profiling Works” section.
+              </p>
+            </div>
+
+            <!-- Q3 -->
+            <article class="question-card bg-white rounded-xl border border-slate-200 shadow-sm p-5 sm:p-6" data-q="3">
+              <div class="flex items-start justify-between gap-3 mb-2">
+                <label for="ans-q3" class="text-sm sm:text-base font-semibold text-slate-900 leading-snug">
+                  <span class="inline-block px-2 py-0.5 mr-1.5 rounded bg-emerald-100 text-emerald-900 font-bold text-xs">Q3</span>
+                  What does “STR” stand for?
+                </label>
+                <span class="q-status-badge shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 no-print">Unanswered</span>
+              </div>
+              <input
+                type="text"
+                id="ans-q3"
+                placeholder="Type what STR stands for..."
+                class="worksheet-field w-full mt-1 p-3 text-sm text-slate-800 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 focus:bg-white transition-all"
+              />
+              <div class="print-answer-mirror" data-mirror-for="ans-q3"></div>
+            </article>
+
+            <!-- Q4 -->
+            <article class="question-card bg-white rounded-xl border border-slate-200 shadow-sm p-5 sm:p-6" data-q="4">
+              <div class="flex items-start justify-between gap-3 mb-2">
+                <label for="ans-q4" class="text-sm sm:text-base font-semibold text-slate-900 leading-snug">
+                  <span class="inline-block px-2 py-0.5 mr-1.5 rounded bg-emerald-100 text-emerald-900 font-bold text-xs">Q4</span>
+                  Look at the gel on the screen. What do the bands/ladders on the gel represent?
+                </label>
+                <span class="q-status-badge shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 no-print">Unanswered</span>
+              </div>
+              <textarea
+                id="ans-q4"
+                rows="2"
+                placeholder="Type your answer here..."
+                class="worksheet-field w-full mt-1 p-3 text-sm text-slate-800 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 focus:bg-white transition-all resize-y"
+              ></textarea>
+              <div class="print-answer-mirror" data-mirror-for="ans-q4"></div>
+            </article>
+
+            <!-- Q5 -->
+            <article class="question-card bg-white rounded-xl border border-slate-200 shadow-sm p-5 sm:p-6" data-q="5">
+              <div class="flex items-start justify-between gap-3 mb-2">
+                <label for="ans-q5" class="text-sm sm:text-base font-semibold text-slate-900 leading-snug">
+                  <span class="inline-block px-2 py-0.5 mr-1.5 rounded bg-emerald-100 text-emerald-900 font-bold text-xs">Q5</span>
+                  Why is it so unlikely that two individuals will share the exact same STRS?
+                </label>
+                <span class="q-status-badge shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 no-print">Unanswered</span>
+              </div>
+              <textarea
+                id="ans-q5"
+                rows="3"
+                placeholder="Type your answer here..."
+                class="worksheet-field w-full mt-1 p-3 text-sm text-slate-800 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 focus:bg-white transition-all resize-y"
+              ></textarea>
+              <div class="print-answer-mirror" data-mirror-for="ans-q5"></div>
+            </article>
+          </div>
+
+          <!-- Subsection: PCR Animation -->
+          <div class="space-y-3 pt-2">
+            <div class="bg-amber-50 border-l-4 border-amber-500 rounded-r-xl p-3.5 sm:p-4">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-200/80 text-amber-950 mb-1.5">
+                [Case One &gt; Technique &gt; PCR Animation]
+              </span>
+              <p class="text-sm font-medium text-slate-800">
+                Watch the animation on the polymerase chain reaction under Technique.
+              </p>
+            </div>
+
+            <!-- Q6 -->
+            <article class="question-card bg-white rounded-xl border border-slate-200 shadow-sm p-5 sm:p-6" data-q="6">
+              <div class="flex items-start justify-between gap-3 mb-2">
+                <label for="ans-q6" class="text-sm sm:text-base font-semibold text-slate-900 leading-snug">
+                  <span class="inline-block px-2 py-0.5 mr-1.5 rounded bg-emerald-100 text-emerald-900 font-bold text-xs">Q6</span>
+                  After 30 cycles of PCR, how many DNA fragments are made?
+                </label>
+                <span class="q-status-badge shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 no-print">Unanswered</span>
+              </div>
+              <input
+                type="text"
+                id="ans-q6"
+                placeholder="Enter number of DNA fragments..."
+                class="worksheet-field w-full mt-1 p-3 text-sm text-slate-800 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 focus:bg-white transition-all"
+              />
+              <div class="print-answer-mirror" data-mirror-for="ans-q6"></div>
+            </article>
+
+            <!-- Q7 -->
+            <article class="question-card bg-white rounded-xl border border-slate-200 shadow-sm p-5 sm:p-6" data-q="7">
+              <div class="flex items-start justify-between gap-3 mb-2">
+                <label for="ans-q7" class="text-sm sm:text-base font-semibold text-slate-900 leading-snug">
+                  <span class="inline-block px-2 py-0.5 mr-1.5 rounded bg-emerald-100 text-emerald-900 font-bold text-xs">Q7</span>
+                  What is the relationship between the size of a DNA fragment and the distance it migrates in the gel?
+                </label>
+                <span class="q-status-badge shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 no-print">Unanswered</span>
+              </div>
+              <textarea
+                id="ans-q7"
+                rows="2"
+                placeholder="Explain the relationship between fragment size and migration distance..."
+                class="worksheet-field w-full mt-1 p-3 text-sm text-slate-800 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 focus:bg-white transition-all resize-y"
+              ></textarea>
+              <div class="print-answer-mirror" data-mirror-for="ans-q7"></div>
+            </article>
+          </div>
+
+          <!-- Subsection: Gel Electrophoresis (Press "Start") -->
+          <div class="space-y-3 pt-2">
+            <div class="bg-amber-50 border-l-4 border-amber-500 rounded-r-xl p-3.5 sm:p-4">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-200/80 text-amber-950 mb-1.5">
+                [Case One &gt; Technique &gt; Gel Electrophoresis (Press "Start")]
+              </span>
+              <p class="text-sm font-medium text-slate-800">
+                Run the gel in the Technique section by pressing the Start button.
+              </p>
+            </div>
+
+            <!-- Q8 Grouped Card -->
+            <article class="question-card bg-white rounded-xl border border-slate-200 shadow-sm p-5 sm:p-6 space-y-4" data-q="8">
+              <div class="flex items-center justify-between gap-3 border-b border-slate-100 pb-2">
+                <h3 class="text-sm sm:text-base font-bold text-slate-900">
+                  <span class="inline-block px-2 py-0.5 mr-1.5 rounded bg-emerald-100 text-emerald-900 font-bold text-xs">Q8</span>
+                  Gel Electrophoresis Analysis
+                </h3>
+                <span class="q-status-badge shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 no-print">0 / 3 Parts</span>
+              </div>
+
+              <!-- 8a -->
+              <div>
+                <label for="ans-q8a" class="block text-sm font-semibold text-slate-800 mb-1.5">
+                  8a. Which elephant (left or right) has both the largest and smallest fragments?
+                </label>
+                <input
+                  type="text"
+                  id="ans-q8a"
+                  placeholder="Left or right elephant..."
+                  class="worksheet-field w-full p-2.5 text-sm text-slate-800 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 focus:bg-white transition-all"
+                />
+                <div class="print-answer-mirror" data-mirror-for="ans-q8a"></div>
+              </div>
+
+              <!-- 8b -->
+              <div>
+                <label for="ans-q8b" class="block text-sm font-semibold text-slate-800 mb-1.5">
+                  8b. Approximately what size is the largest fragment (bp)? How does its position near the well prove it is the largest?
+                </label>
+                <textarea
+                  id="ans-q8b"
+                  rows="2"
+                  placeholder="Enter approximate size (bp) and explanation..."
+                  class="worksheet-field w-full p-2.5 text-sm text-slate-800 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 focus:bg-white transition-all resize-y"
+                ></textarea>
+                <div class="print-answer-mirror" data-mirror-for="ans-q8b"></div>
+              </div>
+
+              <!-- 8c -->
+              <div>
+                <label for="ans-q8c" class="block text-sm font-semibold text-slate-800 mb-1.5">
+                  8c. Approximately what size is the smallest fragment (bp)? How does its position near the well prove it is the smallest?
+                </label>
+                <textarea
+                  id="ans-q8c"
+                  rows="2"
+                  placeholder="Enter approximate size (bp) and explanation..."
+                  class="worksheet-field w-full p-2.5 text-sm text-slate-800 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 focus:bg-white transition-all resize-y"
+                ></textarea>
+                <div class="print-answer-mirror" data-mirror-for="ans-q8c"></div>
+              </div>
+            </article>
+          </div>
+
+          <!-- Subsection: Case One Application -->
+          <div class="space-y-3 pt-2">
+            <div class="bg-amber-50 border-l-4 border-amber-500 rounded-r-xl p-3.5 sm:p-4">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-200/80 text-amber-950 mb-1.5">
+                [Case One &gt; Application]
+              </span>
+              <p class="text-sm font-medium text-slate-800">
+                Proceed to the Application section and look at the gel.
+              </p>
+            </div>
+
+            <!-- Q9 Grouped Card -->
+            <article class="question-card bg-white rounded-xl border border-slate-200 shadow-sm p-5 sm:p-6 space-y-4" data-q="9">
+              <div class="flex items-center justify-between gap-3 border-b border-slate-100 pb-2">
+                <h3 class="text-sm sm:text-base font-bold text-slate-900">
+                  <span class="inline-block px-2 py-0.5 mr-1.5 rounded bg-emerald-100 text-emerald-900 font-bold text-xs">Q9</span>
+                  Relatedness &amp; Multiple STR Markers
+                </h3>
+                <span class="q-status-badge shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 no-print">0 / 2 Parts</span>
+              </div>
+
+              <!-- 9a -->
+              <div>
+                <label for="ans-q9a" class="block text-sm font-semibold text-slate-800 mb-1.5">
+                  9a. These two elephants come from two different populations that are geographically distant from one another. If the gel was to show data from two elephants that were siblings, would their profiles be more or less similar? Why?
+                </label>
+                <textarea
+                  id="ans-q9a"
+                  rows="3"
+                  placeholder="Compare sibling profiles and explain why..."
+                  class="worksheet-field w-full p-2.5 text-sm text-slate-800 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 focus:bg-white transition-all resize-y"
+                ></textarea>
+                <div class="print-answer-mirror" data-mirror-for="ans-q9a"></div>
+              </div>
+
+              <!-- 9b -->
+              <div>
+                <label for="ans-q9b" class="block text-sm font-semibold text-slate-800 mb-1.5">
+                  9b. Why do you think scientists use multiple markers to identify individual elephants?
+                </label>
+                <textarea
+                  id="ans-q9b"
+                  rows="2"
+                  placeholder="Explain why multiple STR markers are used..."
+                  class="worksheet-field w-full p-2.5 text-sm text-slate-800 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 focus:bg-white transition-all resize-y"
+                ></textarea>
+                <div class="print-answer-mirror" data-mirror-for="ans-q9b"></div>
+              </div>
+            </article>
+          </div>
+
+          <!-- Banner Divider -->
+          <div class="my-6 bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 text-white rounded-xl p-4 shadow-md text-center border border-amber-400">
+            <p class="text-sm sm:text-base font-extrabold tracking-wide">
+              Move on to Case Two! — CSI Wildlife: Tracking poachers Part II
+            </p>
+          </div>
+        </section>
+
+        <!-- =================================================================
+             SECTION: CASE TWO
+        ================================================================== -->
+        <section id="section-case-two" class="space-y-5 scroll-mt-28">
+          <div class="bg-lab-forest text-white rounded-xl px-5 py-3.5 shadow-sm flex flex-wrap items-center justify-between gap-2">
+            <h2 class="text-lg sm:text-xl font-extrabold tracking-tight uppercase">
+              CASE TWO
+            </h2>
+            <span class="text-xs font-semibold text-emerald-200">Geographic Reference Map &amp; Population Genetics</span>
+          </div>
+
+          <!-- Q10 -->
+          <div class="space-y-3">
+            <div class="bg-amber-50 border-l-4 border-amber-500 rounded-r-xl p-3.5 sm:p-4">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-200/80 text-amber-950">
+                [Case Two &gt; Introduction &amp; Crime Scene Video]
+              </span>
+            </div>
+
+            <article class="question-card bg-white rounded-xl border border-slate-200 shadow-sm p-5 sm:p-6" data-q="10">
+              <div class="flex items-start justify-between gap-3 mb-2">
+                <label for="ans-q10" class="text-sm sm:text-base font-semibold text-slate-900 leading-snug">
+                  <span class="inline-block px-2 py-0.5 mr-1.5 rounded bg-emerald-100 text-emerald-900 font-bold text-xs">Q10</span>
+                  Watch the crime scene video and read the Case Two introduction on the first slide. In Case One, you were looking for a match with an individual elephant. How does Case Two differ from Case One?
+                </label>
+                <span class="q-status-badge shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 no-print">Unanswered</span>
+              </div>
+              <textarea
+                id="ans-q10"
+                rows="3"
+                placeholder="Explain how Case Two differs from Case One..."
+                class="worksheet-field w-full mt-1 p-3 text-sm text-slate-800 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 focus:bg-white transition-all resize-y"
+              ></textarea>
+              <div class="print-answer-mirror" data-mirror-for="ans-q10"></div>
+            </article>
+          </div>
+
+          <!-- Q11 -->
+          <div class="space-y-3 pt-2">
+            <div class="bg-amber-50 border-l-4 border-amber-500 rounded-r-xl p-3.5 sm:p-4">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-200/80 text-amber-950">
+                [Case Two &gt; Building a Reference Map &gt; Video]
+              </span>
+            </div>
+
+            <article class="question-card bg-white rounded-xl border border-slate-200 shadow-sm p-5 sm:p-6" data-q="11">
+              <div class="flex items-start justify-between gap-3 mb-2">
+                <label for="ans-q11" class="text-sm sm:text-base font-semibold text-slate-900 leading-snug">
+                  <span class="inline-block px-2 py-0.5 mr-1.5 rounded bg-emerald-100 text-emerald-900 font-bold text-xs">Q11</span>
+                  Watch the short video in the “Building a Reference Map” section. Elephant populations differ from one another. These differences are due to geographic distance and the length of time since their ancestors separated from one another. Explain how geography affects their genetic relatedness.
+                </label>
+                <span class="q-status-badge shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 no-print">Unanswered</span>
+              </div>
+              <textarea
+                id="ans-q11"
+                rows="3"
+                placeholder="Explain how geographic distance and separation affect genetic relatedness..."
+                class="worksheet-field w-full mt-1 p-3 text-sm text-slate-800 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 focus:bg-white transition-all resize-y"
+              ></textarea>
+              <div class="print-answer-mirror" data-mirror-for="ans-q11"></div>
+            </article>
+          </div>
+
+          <!-- Q12, Q13, Q14 -->
+          <div class="space-y-3 pt-2">
+            <div class="bg-amber-50 border-l-4 border-amber-500 rounded-r-xl p-3.5 sm:p-4">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-200/80 text-amber-950">
+                [Case Two &gt; Applications]
+              </span>
+            </div>
+
+            <!-- Q12 -->
+            <article class="question-card bg-white rounded-xl border border-slate-200 shadow-sm p-5 sm:p-6" data-q="12">
+              <div class="flex items-start justify-between gap-3 mb-2">
+                <label for="ans-q12" class="text-sm sm:text-base font-semibold text-slate-900 leading-snug">
+                  <span class="inline-block px-2 py-0.5 mr-1.5 rounded bg-emerald-100 text-emerald-900 font-bold text-xs">Q12</span>
+                  In the gel under the Applications section, think about how many alleles one individual inherits versus how many alleles exist across an entire population. Why does the ivory sample contain only two bands while the other lanes (samples A and B) have multiple bands?
+                </label>
+                <span class="q-status-badge shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 no-print">Unanswered</span>
+              </div>
+              <textarea
+                id="ans-q12"
+                rows="3"
+                placeholder="Explain individual alleles vs. population alleles..."
+                class="worksheet-field w-full mt-1 p-3 text-sm text-slate-800 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 focus:bg-white transition-all resize-y"
+              ></textarea>
+              <div class="print-answer-mirror" data-mirror-for="ans-q12"></div>
+            </article>
+
+            <!-- Q13 -->
+            <article class="question-card bg-white rounded-xl border border-slate-200 shadow-sm p-5 sm:p-6" data-q="13">
+              <div class="flex items-start justify-between gap-3 mb-2">
+                <label for="ans-q13" class="text-sm sm:text-base font-semibold text-slate-900 leading-snug">
+                  <span class="inline-block px-2 py-0.5 mr-1.5 rounded bg-emerald-100 text-emerald-900 font-bold text-xs">Q13</span>
+                  If an ivory sample has two alleles that are also found in a population sample, does that tell you with certainty that the ivory sample came from that population? Explain your answer.
+                </label>
+                <span class="q-status-badge shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 no-print">Unanswered</span>
+              </div>
+              <textarea
+                id="ans-q13"
+                rows="3"
+                placeholder="Type your answer and explanation..."
+                class="worksheet-field w-full mt-1 p-3 text-sm text-slate-800 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 focus:bg-white transition-all resize-y"
+              ></textarea>
+              <div class="print-answer-mirror" data-mirror-for="ans-q13"></div>
+            </article>
+
+            <!-- Q14 -->
+            <article class="question-card bg-white rounded-xl border border-slate-200 shadow-sm p-5 sm:p-6" data-q="14">
+              <div class="flex items-start justify-between gap-3 mb-2">
+                <label for="ans-q14" class="text-sm sm:text-base font-semibold text-slate-900 leading-snug">
+                  <span class="inline-block px-2 py-0.5 mr-1.5 rounded bg-emerald-100 text-emerald-900 font-bold text-xs">Q14</span>
+                  Proceed to the Finding a Location section. Forest elephants and savanna elephants diverged over 2.5 million years ago, so some researchers think they should be classified as different species. Knowing this information, which genetic profiles would you predict would be more similar to one another: those of a forest elephant and a savanna elephant that are geographically close to one another, or those of two forest elephants that live far apart from one another? Explain your reasoning.
+                </label>
+                <span class="q-status-badge shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 no-print">Unanswered</span>
+              </div>
+              <textarea
+                id="ans-q14"
+                rows="3"
+                placeholder="State your prediction and explain your evolutionary reasoning..."
+                class="worksheet-field w-full mt-1 p-3 text-sm text-slate-800 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 focus:bg-white transition-all resize-y"
+              ></textarea>
+              <div class="print-answer-mirror" data-mirror-for="ans-q14"></div>
+            </article>
+          </div>
+
+          <!-- ===============================================================
+               Q15 STRUCTURED TABLE & Q16 CONCLUSION
+          ================================================================ -->
+          <div id="section-q15-conclusion" class="space-y-5 pt-3 scroll-mt-28">
+            <div class="bg-amber-50 border-l-4 border-amber-500 rounded-r-xl p-3.5 sm:p-4 space-y-2">
+              <div class="flex flex-wrap gap-1.5">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-200/80 text-amber-950">
+                  [Case Two &gt; Finding a Location &gt; Forest vs. Savanna]
+                </span>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-200/80 text-amber-950">
+                  [Case Two &gt; Finding a Location &gt; Eliminating North, East, or South]
+                </span>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-200/80 text-amber-950">
+                  [Case Two &gt; Finding a Location &gt; Final Region Elimination]
+                </span>
+              </div>
+              <p class="text-sm font-medium text-slate-800">
+                Continue to find the location by eliminating either the forest or savanna regions.
+              </p>
+            </div>
+
+            <!-- Q15 Table Card -->
+            <article class="question-card bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-6 space-y-3" data-q="15">
+              <div class="flex items-center justify-between gap-3">
+                <h3 class="text-sm sm:text-base font-bold text-slate-900">
+                  <span class="inline-block px-2 py-0.5 mr-1.5 rounded bg-emerald-100 text-emerald-900 font-bold text-xs">Q15</span>
+                  Geographic Elimination Evidence Table
+                </h3>
+                <span class="q-status-badge shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 no-print">0 / 3 Steps</span>
+              </div>
+
+              <div class="overflow-x-auto rounded-lg border border-slate-300">
+                <table class="w-full min-w-[680px] text-left border-collapse">
+                  <thead>
+                    <tr class="bg-slate-800 text-white text-xs uppercase tracking-wider">
+                      <th class="p-3 font-bold border-b border-r border-slate-700 w-[21%]">Elimination Step</th>
+                      <th class="p-3 font-bold border-b border-r border-slate-700 w-[20%]">Region Eliminated</th>
+                      <th class="p-3 font-bold border-b border-r border-slate-700 w-[22%]">Marker(s) &amp; Allele(s) Used</th>
+                      <th class="p-3 font-bold border-b border-slate-700 w-[37%]">Evidence &amp; Reasoning (How do the bands prove the ivory isn't from here?)</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-300 text-sm">
+                    <!-- Row 1 -->
+                    <tr class="bg-white align-top">
+                      <td class="p-3 font-semibold text-slate-900 bg-slate-50 border-r border-slate-300">
+                        Step 1: Forest vs. Savanna
+                      </td>
+                      <td class="p-2 border-r border-slate-300">
+                        <input
+                          type="text"
+                          id="ans-q15-r1-region"
+                          aria-label="Step 1 Region Eliminated"
+                          placeholder="Region eliminated..."
+                          class="worksheet-field w-full p-2 text-sm bg-slate-50 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:bg-white"
+                        />
+                        <div class="print-answer-mirror" data-mirror-for="ans-q15-r1-region"></div>
+                      </td>
+                      <td class="p-2 border-r border-slate-300">
+                        <input
+                          type="text"
+                          id="ans-q15-r1-markers"
+                          aria-label="Step 1 Markers and Alleles Used"
+                          placeholder="e.g., FH67, alleles..."
+                          class="worksheet-field w-full p-2 text-sm bg-slate-50 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:bg-white"
+                        />
+                        <div class="print-answer-mirror" data-mirror-for="ans-q15-r1-markers"></div>
+                      </td>
+                      <td class="p-2">
+                        <textarea
+                          id="ans-q15-r1-evidence"
+                          rows="3"
+                          aria-label="Step 1 Evidence and Reasoning"
+                          placeholder="Explain how the gel bands prove the ivory isn't from here..."
+                          class="worksheet-field w-full p-2 text-sm bg-slate-50 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:bg-white resize-y"
+                        ></textarea>
+                        <div class="print-answer-mirror" data-mirror-for="ans-q15-r1-evidence"></div>
+                      </td>
+                    </tr>
+
+                    <!-- Row 2 -->
+                    <tr class="bg-white align-top">
+                      <td class="p-3 font-semibold text-slate-900 bg-slate-50 border-r border-slate-300">
+                        Step 2: North, East, or South
+                      </td>
+                      <td class="p-2 border-r border-slate-300">
+                        <input
+                          type="text"
+                          id="ans-q15-r2-region"
+                          aria-label="Step 2 Region Eliminated"
+                          placeholder="Region eliminated..."
+                          class="worksheet-field w-full p-2 text-sm bg-slate-50 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:bg-white"
+                        />
+                        <div class="print-answer-mirror" data-mirror-for="ans-q15-r2-region"></div>
+                      </td>
+                      <td class="p-2 border-r border-slate-300">
+                        <input
+                          type="text"
+                          id="ans-q15-r2-markers"
+                          aria-label="Step 2 Markers and Alleles Used"
+                          placeholder="Marker(s) & allele(s)..."
+                          class="worksheet-field w-full p-2 text-sm bg-slate-50 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:bg-white"
+                        />
+                        <div class="print-answer-mirror" data-mirror-for="ans-q15-r2-markers"></div>
+                      </td>
+                      <td class="p-2">
+                        <textarea
+                          id="ans-q15-r2-evidence"
+                          rows="3"
+                          aria-label="Step 2 Evidence and Reasoning"
+                          placeholder="Explain how the gel bands prove the ivory isn't from here..."
+                          class="worksheet-field w-full p-2 text-sm bg-slate-50 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:bg-white resize-y"
+                        ></textarea>
+                        <div class="print-answer-mirror" data-mirror-for="ans-q15-r2-evidence"></div>
+                      </td>
+                    </tr>
+
+                    <!-- Row 3 -->
+                    <tr class="bg-white align-top">
+                      <td class="p-3 font-semibold text-slate-900 bg-slate-50 border-r border-slate-300">
+                        Step 3: Final Region Elimination
+                      </td>
+                      <td class="p-2 border-r border-slate-300">
+                        <input
+                          type="text"
+                          id="ans-q15-r3-region"
+                          aria-label="Step 3 Region Eliminated"
+                          placeholder="Region eliminated..."
+                          class="worksheet-field w-full p-2 text-sm bg-slate-50 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:bg-white"
+                        />
+                        <div class="print-answer-mirror" data-mirror-for="ans-q15-r3-region"></div>
+                      </td>
+                      <td class="p-2 border-r border-slate-300">
+                        <input
+                          type="text"
+                          id="ans-q15-r3-markers"
+                          aria-label="Step 3 Markers and Alleles Used"
+                          placeholder="Marker(s) & allele(s)..."
+                          class="worksheet-field w-full p-2 text-sm bg-slate-50 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:bg-white"
+                        />
+                        <div class="print-answer-mirror" data-mirror-for="ans-q15-r3-markers"></div>
+                      </td>
+                      <td class="p-2">
+                        <textarea
+                          id="ans-q15-r3-evidence"
+                          rows="3"
+                          aria-label="Step 3 Evidence and Reasoning"
+                          placeholder="Explain how the gel bands prove the ivory isn't from here..."
+                          class="worksheet-field w-full p-2 text-sm bg-slate-50 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:bg-white resize-y"
+                        ></textarea>
+                        <div class="print-answer-mirror" data-mirror-for="ans-q15-r3-evidence"></div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </article>
+
+            <!-- Q16 -->
+            <article class="question-card bg-white rounded-xl border border-slate-200 shadow-sm p-5 sm:p-6 space-y-3" data-q="16">
+              <div class="flex items-start justify-between gap-3">
+                <label for="ans-q16" class="text-sm sm:text-base font-semibold text-slate-900 leading-snug">
+                  <span class="inline-block px-2 py-0.5 mr-1.5 rounded bg-emerald-100 text-emerald-900 font-bold text-xs">Q16</span>
+                  Elephants are a keystone species, yet your calculation in Question 2 showed that poachers kill approximately 10.6% of the African elephant population every year. Explain why losing elephants at this pace threatens the entire African ecosystem. Feel free to use the sentence starters below or come up with your own.
+                </label>
+                <span class="q-status-badge shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 no-print">Unanswered</span>
+              </div>
+
+              <!-- Clickable Insert Sentence Starter Buttons -->
+              <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 space-y-2 no-print">
+                <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Click to Insert Sentence Starter:</p>
+                <div class="flex flex-col sm:flex-row gap-2">
+                  <button
+                    type="button"
+                    data-starter="Because elephants are a keystone species, their role in the ecosystem is to "
+                    class="starter-btn text-left px-3 py-2 rounded-lg text-xs font-medium bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-900 border border-slate-300 hover:border-emerald-400 shadow-xs transition-all flex items-center gap-2"
+                  >
+                    <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 font-bold shrink-0">+</span>
+                    <span>“Because elephants are a keystone species, their role in the ecosystem is to...”</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    data-starter="If poaching continues to reduce their population by ~10% each year, other organisms will be affected because "
+                    class="starter-btn text-left px-3 py-2 rounded-lg text-xs font-medium bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-900 border border-slate-300 hover:border-emerald-400 shadow-xs transition-all flex items-center gap-2"
+                  >
+                    <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 font-bold shrink-0">+</span>
+                    <span>“If poaching continues to reduce their population by ~10% each year, other organisms will be affected because...”</span>
+                  </button>
+                </div>
+              </div>
+
+              <textarea
+                id="ans-q16"
+                rows="4"
+                placeholder="Write your ecosystem explanation here..."
+                class="worksheet-field w-full p-3 text-sm text-slate-800 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 focus:bg-white transition-all resize-y"
+              ></textarea>
+              <div class="print-answer-mirror" data-mirror-for="ans-q16"></div>
+            </article>
+          </div>
+
+          <!-- Bottom Submission Reminder Card -->
+          <div class="bg-white rounded-xl border border-slate-200 p-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm no-print">
+            <div>
+              <h3 class="text-sm font-bold text-slate-900">Finished with your investigation?</h3>
+              <p class="text-xs text-slate-600 mt-0.5">
+                Copy all your formatted answers to paste into Canvas LMS, or export a clean PDF copy of your worksheet.
+              </p>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                id="bottom-copy-btn"
+                class="px-3.5 py-2 rounded-lg text-xs font-semibold bg-emerald-700 hover:bg-emerald-800 text-white shadow-sm transition-colors"
+              >
+                Copy All Answers
+              </button>
+              <button
+                type="button"
+                id="bottom-print-btn"
+                class="px-3.5 py-2 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-900 text-white shadow-sm transition-colors"
+              >
+                Export / Print Worksheet
+              </button>
+            </div>
+          </div>
+
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- =======================================================================
+       CUSTOM CONFIRMATION MODAL FOR RESETTING ANSWERS (NO window.confirm())
+  ======================================================================== -->
+  <div id="reset-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="reset-modal-title">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+      <div class="flex items-start gap-3">
+        <div class="p-2.5 rounded-full bg-rose-100 text-rose-700 shrink-0">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+            <line x1="12" y1="9" x2="12" y2="13" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
+          </svg>
+        </div>
+        <div>
+          <h3 id="reset-modal-title" class="text-base font-bold text-slate-900">Reset All Worksheet Answers?</h3>
+          <p class="text-sm text-slate-600 mt-1">
+            This will permanently clear your name and all 16 question responses saved in this browser. This action cannot be undone.
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-2">
+        <button
+          type="button"
+          id="cancel-reset-btn"
+          class="px-4 py-2 rounded-lg text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          id="confirm-reset-btn"
+          class="px-4 py-2 rounded-lg text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 shadow-sm transition-colors"
+        >
+          Yes, Clear All Answers
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =======================================================================
+       TOAST NOTIFICATION CONTAINER
+  ======================================================================== -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 pointer-events-none flex flex-col gap-2"></div>
+
+  <!-- =======================================================================
+       APPLICATION LOGIC (AUTO-SAVE, PROGRESS, SPLIT RESIZER, COPY & PRINT)
+  ======================================================================== -->
+  <script>
+    (function () {
+      'use strict';
+
+      const STORAGE_KEY = 'csi_wildlife_elephant_dna_v1';
+      const HEIGHT_STORAGE_KEY = 'csi_wildlife_top_height_vh_v1';
+
+      // All persistent input/textarea IDs
+      const FIELD_IDS = [
+        'student-name',
+        'ans-q1',
+        'ans-q2',
+        'ans-q3',
+        'ans-q4',
+        'ans-q5',
+        'ans-q6',
+        'ans-q7',
+        'ans-q8a',
+        'ans-q8b',
+        'ans-q8c',
+        'ans-q9a',
+        'ans-q9b',
+        'ans-q10',
+        'ans-q11',
+        'ans-q12',
+        'ans-q13',
+        'ans-q14',
+        'ans-q15-r1-region',
+        'ans-q15-r1-markers',
+        'ans-q15-r1-evidence',
+        'ans-q15-r2-region',
+        'ans-q15-r2-markers',
+        'ans-q15-r2-evidence',
+        'ans-q15-r3-region',
+        'ans-q15-r3-markers',
+        'ans-q15-r3-evidence',
+        'ans-q16'
+      ];
+
+      // DOM References
+      const topPane = document.getElementById('top-interactive-pane');
+      const resizer = document.getElementById('split-resizer');
+      const dragShield = document.getElementById('iframe-drag-shield');
+      const worksheetPane = document.getElementById('worksheet-pane');
+      const presetBtns = document.querySelectorAll('.preset-btn');
+      const mobileHeightCycleBtn = document.getElementById('mobile-height-cycle');
+      const saveIndicator = document.getElementById('save-indicator');
+      const progressText = document.getElementById('progress-text');
+      const progressBar = document.getElementById('progress-bar');
+
+      let saveTimeout = null;
+      let currentHeightVh = 52;
+
+      /* ---------------------------------------------------------------------
+         1. SPLIT-SCREEN HEIGHT PRESETS & DRAGGABLE RESIZER
+      ---------------------------------------------------------------------- */
+      function setTopPaneHeight(vh, persist = true) {
+        const clamped = Math.max(25, Math.min(78, Math.round(vh)));
+        currentHeightVh = clamped;
+        topPane.style.height = clamped + 'vh';
+
+        // Update desktop preset button states
+        presetBtns.forEach((btn) => {
+          const presetVal = parseInt(btn.getAttribute('data-preset'), 10);
+          if (presetVal === clamped) {
+            btn.classList.remove('text-slate-300', 'font-medium');
+            btn.classList.add('bg-emerald-700', 'text-white', 'font-semibold', 'shadow-sm');
+          } else {
+            btn.classList.remove('bg-emerald-700', 'text-white', 'font-semibold', 'shadow-sm');
+            btn.classList.add('text-slate-300', 'font-medium');
+          }
+        });
+
+        // Update mobile cycle button label
+        if (mobileHeightCycleBtn) {
+          mobileHeightCycleBtn.textContent = 'View: ' + clamped + '%';
+        }
+
+        if (persist) {
+          try {
+            localStorage.setItem(HEIGHT_STORAGE_KEY, String(clamped));
+          } catch (err) {
+            // Ignore storage quota errors
+          }
+        }
+      }
+
+      // Restore saved height preference
+      try {
+        const savedHeight = parseInt(localStorage.getItem(HEIGHT_STORAGE_KEY), 10);
+        if (!isNaN(savedHeight)) {
+          setTopPaneHeight(savedHeight, false);
+        }
+      } catch (err) {
+        // Fallback to default 52vh
+      }
+
+      // Preset button click handlers
+      presetBtns.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const targetVh = parseInt(btn.getAttribute('data-preset'), 10);
+          setTopPaneHeight(targetVh, true);
+        });
+      });
+
+      // Mobile height cycle handler (40% -> 52% -> 68%)
+      if (mobileHeightCycleBtn) {
+        mobileHeightCycleBtn.addEventListener('click', () => {
+          const presets = [40, 52, 68];
+          const next = presets.find((p) => p > currentHeightVh) || presets[0];
+          setTopPaneHeight(next, true);
+        });
+      }
+
+      // Drag-to-resize logic (Mouse & Touch)
+      let isDragging = false;
+
+      function startResize(e) {
+        isDragging = true;
+        topPane.classList.remove('transition-[height]', 'duration-150');
+        dragShield.classList.remove('hidden');
+        document.body.style.userSelect = 'none';
+        if (e.cancelable) e.preventDefault();
+      }
+
+      function onResizeMove(clientY) {
+        if (!isDragging) return;
+        const viewportH = window.innerHeight;
+        if (viewportH <= 0) return;
+        const newVh = (clientY / viewportH) * 100;
+        setTopPaneHeight(newVh, false);
+      }
+
+      function stopResize() {
+        if (!isDragging) return;
+        isDragging = false;
+        topPane.classList.add('transition-[height]', 'duration-150');
+        dragShield.classList.add('hidden');
+        document.body.style.userSelect = '';
+        try {
+          localStorage.setItem(HEIGHT_STORAGE_KEY, String(currentHeightVh));
+        } catch (err) {}
+      }
+
+      resizer.addEventListener('mousedown', startResize);
+      window.addEventListener('mousemove', (e) => onResizeMove(e.clientY));
+      window.addEventListener('mouseup', stopResize);
+
+      resizer.addEventListener('touchstart', startResize, { passive: false });
+      window.addEventListener('touchmove', (e) => {
+        if (isDragging && e.touches.length > 0) {
+          onResizeMove(e.touches[0].clientY);
+        }
+      }, { passive: true });
+      window.addEventListener('touchend', stopResize);
+
+      // Keyboard accessibility for divider
+      resizer.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          setTopPaneHeight(currentHeightVh - 4, true);
+        } else if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          setTopPaneHeight(currentHeightVh + 4, true);
+        }
+      });
+
+      /* ---------------------------------------------------------------------
+         2. AUTO-SAVE TO LOCALSTORAGE & PRINT MIRROR SYNCING
+      ---------------------------------------------------------------------- */
+      function getVal(id) {
+        const el = document.getElementById(id);
+        return el ? el.value : '';
+      }
+
+      function syncPrintMirrors() {
+        // Sync Student Name & Date in Print Header
+        const studentName = getVal('student-name').trim();
+        const printNameEl = document.getElementById('print-student-name');
+        const printDateEl = document.getElementById('print-date');
+        if (printNameEl) {
+          printNameEl.textContent = studentName || '__________________________';
+        }
+        if (printDateEl) {
+          printDateEl.textContent = new Date().toLocaleDateString(undefined, {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+          });
+        }
+
+        // Sync every answer mirror div
+        document.querySelectorAll('.print-answer-mirror').forEach((mirror) => {
+          const targetId = mirror.getAttribute('data-mirror-for');
+          const val = getVal(targetId).trim();
+          if (val) {
+            mirror.textContent = val;
+            mirror.classList.remove('empty-answer');
+          } else {
+            mirror.textContent = '(No response entered)';
+            mirror.classList.add('empty-answer');
+          }
+        });
+      }
+
+      function saveToStorage() {
+        const payload = {};
+        FIELD_IDS.forEach((id) => {
+          payload[id] = getVal(id);
+        });
+
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+          showSavedFeedback();
+        } catch (err) {
+          console.error('Could not save worksheet to localStorage:', err);
+        }
+      }
+
+      function showSavedFeedback() {
+        if (!saveIndicator) return;
+        saveIndicator.innerHTML = `
+          <svg class="w-3.5 h-3.5 animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          <span>Saving...</span>
+        `;
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(() => {
+          saveIndicator.innerHTML = `
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            <span>Saved</span>
+          `;
+        }, 450);
+      }
+
+      function loadFromStorage() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return;
+          const data = JSON.parse(raw);
+          FIELD_IDS.forEach((id) => {
+            const el = document.getElementById(id);
+            if (el && typeof data[id] === 'string') {
+              el.value = data[id];
+            }
+          });
+        } catch (err) {
+          console.error('Could not load saved worksheet data:', err);
+        }
+      }
+
+      /* ---------------------------------------------------------------------
+         3. LIVE COMPLETION PROGRESS TRACKER (ALL 16 QUESTIONS)
+      ---------------------------------------------------------------------- */
+      function isFilled(id) {
+        return getVal(id).trim().length > 0;
+      }
+
+      function setCardBadge(qNum, isComplete, customLabel) {
+        const card = document.querySelector(`.question-card[data-q="${qNum}"]`);
+        if (!card) return;
+        const badge = card.querySelector('.q-status-badge');
+        if (!badge) return;
+
+        if (isComplete) {
+          badge.textContent = customLabel || 'Completed';
+          badge.className = 'q-status-badge shrink-0 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 no-print';
+          card.classList.add('border-emerald-200');
+          card.classList.remove('border-slate-200');
+        } else {
+          badge.textContent = customLabel || 'Unanswered';
+          badge.className = 'q-status-badge shrink-0 text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-500 no-print';
+          card.classList.remove('border-emerald-200');
+          card.classList.add('border-slate-200');
+        }
+      }
+
+      function updateProgress() {
+        let completedCount = 0;
+
+        // Single-field questions: Q1..Q7, Q10..Q14, Q16
+        const singleQuestions = [1, 2, 3, 4, 5, 6, 7, 10, 11, 12, 13, 14, 16];
+        singleQuestions.forEach((num) => {
+          const done = isFilled(`ans-q${num}`);
+          if (done) completedCount++;
+          setCardBadge(num, done);
+        });
+
+        // Q8: 3 parts (8a, 8b, 8c)
+        const q8Parts = [isFilled('ans-q8a'), isFilled('ans-q8b'), isFilled('ans-q8c')].filter(Boolean).length;
+        const q8Done = q8Parts === 3;
+        if (q8Done) completedCount++;
+        setCardBadge(8, q8Done, q8Done ? 'Completed (3/3)' : `${q8Parts} / 3 Parts`);
+
+        // Q9: 2 parts (9a, 9b)
+        const q9Parts = [isFilled('ans-q9a'), isFilled('ans-q9b')].filter(Boolean).length;
+        const q9Done = q9Parts === 2;
+        if (q9Done) completedCount++;
+        setCardBadge(9, q9Done, q9Done ? 'Completed (2/2)' : `${q9Parts} / 2 Parts`);
+
+        // Q15: 3 rows in elimination table (each step considered filled if at least region & evidence or all cells filled)
+        const step1Filled = isFilled('ans-q15-r1-region') && isFilled('ans-q15-r1-markers') && isFilled('ans-q15-r1-evidence');
+        const step2Filled = isFilled('ans-q15-r2-region') && isFilled('ans-q15-r2-markers') && isFilled('ans-q15-r2-evidence');
+        const step3Filled = isFilled('ans-q15-r3-region') && isFilled('ans-q15-r3-markers') && isFilled('ans-q15-r3-evidence');
+        const q15Steps = [step1Filled, step2Filled, step3Filled].filter(Boolean).length;
+        const q15Done = q15Steps === 3;
+        if (q15Done) completedCount++;
+        setCardBadge(15, q15Done, q15Done ? 'Completed (3/3)' : `${q15Steps} / 3 Steps`);
+
+        // Update top progress bar
+        const pct = Math.round((completedCount / 16) * 100);
+        if (progressText) {
+          progressText.textContent = `${completedCount} / 16 Completed`;
+        }
+        if (progressBar) {
+          progressBar.style.width = `${pct}%`;
+        }
+
+        syncPrintMirrors();
+      }
+
+      // Attach listeners to all worksheet fields
+      FIELD_IDS.forEach((id) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('input', () => {
+          saveToStorage();
+          updateProgress();
+        });
+      });
+
+      /* ---------------------------------------------------------------------
+         4. QUICK SECTION NAVIGATION BUTTONS
+      ---------------------------------------------------------------------- */
+      document.querySelectorAll('.nav-jump-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const targetId = btn.getAttribute('data-target');
+          const targetEl = document.getElementById(targetId);
+          if (!targetEl || !worksheetPane) return;
+
+          const stickyHeight = document.getElementById('sticky-control-bar')?.offsetHeight || 90;
+          const topOffset = targetEl.offsetTop - stickyHeight - 12;
+          worksheetPane.scrollTo({
+            top: Math.max(0, topOffset),
+            behavior: 'smooth'
+          });
+        });
+      });
+
+      /* ---------------------------------------------------------------------
+         5. Q16 CLICKABLE SENTENCE STARTER BUTTONS
+      ---------------------------------------------------------------------- */
+      document.querySelectorAll('.starter-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const starterText = btn.getAttribute('data-starter') || '';
+          const textarea = document.getElementById('ans-q16');
+          if (!textarea) return;
+
+          const current = textarea.value;
+          if (current.trim().length === 0) {
+            textarea.value = starterText;
+          } else {
+            const separator = current.endsWith('\n') || current.endsWith(' ') ? '' : '\n\n';
+            textarea.value = current + separator + starterText;
+          }
+
+          textarea.focus();
+          textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+          saveToStorage();
+          updateProgress();
+          showToast('Sentence starter added to Q16.');
+        });
+      });
+
+      /* ---------------------------------------------------------------------
+         6. TOAST NOTIFICATION HELPER
+      ---------------------------------------------------------------------- */
+      function showToast(message, variant = 'success') {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+
+        const toast = document.createElement('div');
+        const bgClass = variant === 'error'
+          ? 'bg-rose-800 border-rose-600 text-white'
+          : 'bg-slate-900 border-emerald-500/60 text-white';
+
+        toast.className = `pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-xl border shadow-xl text-xs sm:text-sm font-semibold transition-all duration-200 transform translate-y-2 opacity-0 ${bgClass}`;
+        toast.innerHTML = `
+          <svg class="w-4 h-4 text-emerald-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          <span>${message}</span>
+        `;
+
+        container.appendChild(toast);
+
+        // Animate in
+        requestAnimationFrame(() => {
+          toast.classList.remove('translate-y-2', 'opacity-0');
+        });
+
+        // Remove after 3.2 seconds
+        setTimeout(() => {
+          toast.classList.add('translate-y-2', 'opacity-0');
+          setTimeout(() => {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+          }, 220);
+        }, 3200);
+      }
+
+      /* ---------------------------------------------------------------------
+         7. COPY ALL ANSWERS TO CLIPBOARD (CANVAS LMS SUBMISSION FORMAT)
+      ---------------------------------------------------------------------- */
+      function buildFormattedWorksheetText() {
+        const studentName = getVal('student-name').trim() || '[Not Entered]';
+        const today = new Date().toLocaleDateString();
+        const ans = (id) => getVal(id).trim() || '[No answer]';
+
+        return [
+          '====================================================================',
+          'CSI WILDLIFE: ELEPHANT DNA INTERACTIVE WORKSHEET',
+          `Student Name: ${studentName}`,
+          `Date: ${today}`,
+          '====================================================================',
+          '',
+          '--- INTRODUCTION ---',
+          'Q1. What is a keystone species?',
+          `Answer: ${ans('ans-q1')}`,
+          '',
+          'Q2. Dr. Wasser states that approximately 50,000 African elephants are killed each year. According to the video, it is estimated that there are around 470,000 African elephants. If these numbers are correct, approximately what percentage of African elephants are killed each year? (Show your work.)',
+          `Answer: ${ans('ans-q2')}`,
+          '',
+          '--- CASE ONE ---',
+          'Q3. What does “STR” stand for?',
+          `Answer: ${ans('ans-q3')}`,
+          '',
+          'Q4. Look at the gel on the screen. What do the bands/ladders on the gel represent?',
+          `Answer: ${ans('ans-q4')}`,
+          '',
+          'Q5. Why is it so unlikely that two individuals will share the exact same STRS?',
+          `Answer: ${ans('ans-q5')}`,
+          '',
+          'Q6. After 30 cycles of PCR, how many DNA fragments are made?',
+          `Answer: ${ans('ans-q6')}`,
+          '',
+          'Q7. What is the relationship between the size of a DNA fragment and the distance it migrates in the gel?',
+          `Answer: ${ans('ans-q7')}`,
+          '',
+          'Q8. Gel Electrophoresis:',
+          `  8a. Which elephant (left or right) has both the largest and smallest fragments? -> ${ans('ans-q8a')}`,
+          `  8b. Approximately what size is the largest fragment (bp)? How does its position near the well prove it is the largest? -> ${ans('ans-q8b')}`,
+          `  8c. Approximately what size is the smallest fragment (bp)? How does its position near the well prove it is the smallest? -> ${ans('ans-q8c')}`,
+          '',
+          'Q9. Case One Application:',
+          `  9a. Sibling profiles similarity & why -> ${ans('ans-q9a')}`,
+          `  9b. Why scientists use multiple markers -> ${ans('ans-q9b')}`,
+          '',
+          '--- CASE TWO ---',
+          'Q10. How does Case Two differ from Case One?',
+          `Answer: ${ans('ans-q10')}`,
+          '',
+          'Q11. Explain how geography affects their genetic relatedness.',
+          `Answer: ${ans('ans-q11')}`,
+          '',
+          'Q12. Why does the ivory sample contain only two bands while the other lanes (samples A and B) have multiple bands?',
+          `Answer: ${ans('ans-q12')}`,
+          '',
+          'Q13. If an ivory sample has two alleles that are also found in a population sample, does that tell you with certainty that the ivory sample came from that population? Explain your answer.',
+          `Answer: ${ans('ans-q13')}`,
+          '',
+          'Q14. Which genetic profiles would be more similar: a forest elephant and a savanna elephant that are geographically close, or two forest elephants that live far apart? Explain your reasoning.',
+          `Answer: ${ans('ans-q14')}`,
+          '',
+          'Q15. Finding a Location — Elimination Table:',
+          `  • Step 1: Forest vs. Savanna`,
+          `    - Region Eliminated: ${ans('ans-q15-r1-region')}`,
+          `    - Marker(s) & Allele(s) Used: ${ans('ans-q15-r1-markers')}`,
+          `    - Evidence & Reasoning: ${ans('ans-q15-r1-evidence')}`,
+          `  • Step 2: North, East, or South`,
+          `    - Region Eliminated: ${ans('ans-q15-r2-region')}`,
+          `    - Marker(s) & Allele(s) Used: ${ans('ans-q15-r2-markers')}`,
+          `    - Evidence & Reasoning: ${ans('ans-q15-r2-evidence')}`,
+          `  • Step 3: Final Region Elimination`,
+          `    - Region Eliminated: ${ans('ans-q15-r3-region')}`,
+          `    - Marker(s) & Allele(s) Used: ${ans('ans-q15-r3-markers')}`,
+          `    - Evidence & Reasoning: ${ans('ans-q15-r3-evidence')}`,
+          '',
+          'Q16. Explain why losing elephants at this pace (~10.6% per year) threatens the entire African ecosystem.',
+          `Answer: ${ans('ans-q16')}`,
+          '===================================================================='
+        ].join('\n');
+      }
+
+      function copyAllAnswers() {
+        const formattedText = buildFormattedWorksheetText();
+        const helperTextarea = document.createElement('textarea');
+        helperTextarea.value = formattedText;
+        helperTextarea.style.position = 'fixed';
+        helperTextarea.style.left = '-9999px';
+        helperTextarea.style.top = '0';
+        document.body.appendChild(helperTextarea);
+        helperTextarea.focus();
+        helperTextarea.select();
+
+        let copied = false;
+        try {
+          copied = document.execCommand('copy');
+        } catch (err) {
+          copied = false;
+        }
+        document.body.removeChild(helperTextarea);
+
+        if (copied) {
+          showToast('All questions & answers copied to clipboard for Canvas!');
+        } else {
+          showToast('Unable to copy automatically. Please use Export / Print.', 'error');
+        }
+      }
+
+      document.getElementById('copy-answers-btn')?.addEventListener('click', copyAllAnswers);
+      document.getElementById('bottom-copy-btn')?.addEventListener('click', copyAllAnswers);
+
+      /* ---------------------------------------------------------------------
+         8. EXPORT / PRINT WORKSHEET
+      ---------------------------------------------------------------------- */
+      function triggerPrint() {
+        syncPrintMirrors();
+        window.print();
+      }
+
+      document.getElementById('print-worksheet-btn')?.addEventListener('click', triggerPrint);
+      document.getElementById('bottom-print-btn')?.addEventListener('click', triggerPrint);
+
+      /* ---------------------------------------------------------------------
+         9. CUSTOM RESET CONFIRMATION MODAL
+      ---------------------------------------------------------------------- */
+      const resetModal = document.getElementById('reset-modal');
+      const openResetBtn = document.getElementById('open-reset-modal-btn');
+      const cancelResetBtn = document.getElementById('cancel-reset-btn');
+      const confirmResetBtn = document.getElementById('confirm-reset-btn');
+
+      openResetBtn?.addEventListener('click', () => {
+        resetModal?.classList.remove('hidden');
+        cancelResetBtn?.focus();
+      });
+
+      cancelResetBtn?.addEventListener('click', () => {
+        resetModal?.classList.add('hidden');
+      });
+
+      // Close modal on backdrop click or Escape key
+      resetModal?.addEventListener('click', (e) => {
+        if (e.target === resetModal) {
+          resetModal.classList.add('hidden');
+        }
+      });
+
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && resetModal && !resetModal.classList.contains('hidden')) {
+          resetModal.classList.add('hidden');
+        }
+      });
+
+      confirmResetBtn?.addEventListener('click', () => {
+        FIELD_IDS.forEach((id) => {
+          const el = document.getElementById(id);
+          if (el) el.value = '';
+        });
+
+        try {
+          localStorage.removeItem(STORAGE_KEY);
+        } catch (err) {}
+
+        updateProgress();
+        resetModal?.classList.add('hidden');
+        showToast('All worksheet answers have been cleared.');
+      });
+
+      /* ---------------------------------------------------------------------
+         INITIALIZE ON LOAD
+      ---------------------------------------------------------------------- */
+      loadFromStorage();
+      updateProgress();
+    })();
+  </script>
+</body>
+</html>
